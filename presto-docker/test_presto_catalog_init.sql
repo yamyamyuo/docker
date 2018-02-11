@@ -1,7 +1,7 @@
 create database IF NOT EXISTS test;
 use test;
 
-DROP TABLE IF EXISTS `sql_executions`;
+DROP TABLE IF EXISTS `presto_info`;
 
 CREATE TABLE `presto_info` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -20,9 +20,9 @@ CREATE TABLE `presto_info` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-insert into sql_executions(update_time, create_time)
+insert into presto_info(update_time, create_time)
 values (now(), now());
-insert into sql_executions(update_time, create_time)
+insert into presto_info(update_time, create_time)
 values (now(), now());
-insert into sql_executions(update_time, create_time)
+insert into presto_info(update_time, create_time)
 values (now(), now());
