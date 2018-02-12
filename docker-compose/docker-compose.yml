@@ -1,0 +1,90 @@
+version: '3'
+services:
+  mysql:
+    image: registry.docker-cn.com/library/mysql:latest
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_ROOT_PASSWORD: "123456"
+    ports:
+      - "3306:3306"
+
+  localstack:
+    image: atlassianlabs/localstack:latest
+    environment:
+      AWS_ACCESS_KEY_ID: unit-test-user
+      AWS_SECRET_ACCESS_KEY: unit-test-user
+      AWS_DEFAULT_REGION: cn-north-1
+      AWS_DEFAULT_OUTPUT: text
+      SERVICES: s3
+    ports:
+      - "4572:4572"
+
+  presto:
+    image: presto:v0.180
+    ports:
+      - "8888:8888"
+
+  web:
+    image: python-web-base:v0.1
+    command: bash /base/sbin/docker_compose_web_entrypoint.sh
+    ports:
+      - "8081:8081"
+    environment:
+      SQL_BUFFET_UNIT_TEST: 1
+
+      S3_PORT: 4572
+      S3_HOST: localstack
+      AWS_ACCESS_KEY_ID: unit-test-user
+      AWS_SECRET_ACCESS_KEY: unit-test-user
+      AWS_DEFAULT_REGION: cn-north-1
+      AWS_DEFAULT_OUTPUT: text
+
+      PRESTO_HOST: presto
+
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: test
+      MYSQL_ROOT_PASSWORD: "123456"
+
+
+    depends_on:
+      - mysql
+      - localstack
+      - presto
+    volumes:
+#   code base
+      - .:/base
+#   query result shared volume: /tmp/
+      - /tmp:/tmp
+
+  celery:
+    image: python-web-base:v0.1
+    command: bash /base/sbin/docker_compose_celery_entrypoint.sh
+    environment:
+      SQL_BUFFET_UNIT_TEST: 1
+      C_FORCE_ROOT: "true"
+
+      PRESTO_HOST: presto
+
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: test
+      MYSQL_ROOT_PASSWORD: "123456"
+
+      AWS_ACCESS_KEY_ID: unit-test-user
+      AWS_SECRET_ACCESS_KEY: unit-test-user
+      AWS_DEFAULT_REGION: cn-north-1
+      AWS_DEFAULT_OUTPUT: text
+
+
+    depends_on:
+      - mysql
+      - presto
+      - localstack
+    volumes:
+#   code base
+      - .:/base
+#   query result shared volume: /tmp/
+      - /tmp:/tmp
+
+
+
+
