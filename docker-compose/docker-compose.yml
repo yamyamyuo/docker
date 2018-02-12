@@ -1,16 +1,20 @@
 version: '3'
 services:
   mysql:
+    # mysql 镜像
     image: registry.docker-cn.com/library/mysql:latest
     environment:
+      # 初始化mysql环境变量
       MYSQL_DATABASE: test
       MYSQL_ROOT_PASSWORD: "123456"
+    # 暴露端口号
     ports:
       - "3306:3306"
 
   localstack:
     image: atlassianlabs/localstack:latest
     environment:
+      # localstack主要是为了模拟aws s3, 方便单元测试
       AWS_ACCESS_KEY_ID: unit-test-user
       AWS_SECRET_ACCESS_KEY: unit-test-user
       AWS_DEFAULT_REGION: cn-north-1
@@ -20,18 +24,20 @@ services:
       - "4572:4572"
 
   presto:
+    # presto在我的另外一篇文章中有写如何制作镜像 https://www.jianshu.com/p/bb5181008cd7
     image: presto:v0.180
     ports:
       - "8888:8888"
 
   web:
+    # 这个镜像可以根据代码中依赖的包进行build, 节省每次安装的时间
     image: python-web-base:v0.1
     command: bash /base/sbin/docker_compose_web_entrypoint.sh
+    # 暴露端口号, 成功启动之后可以通过 http://localhost:8081 进行访问
     ports:
       - "8081:8081"
+    # 环境变量的设置
     environment:
-      SQL_BUFFET_UNIT_TEST: 1
-
       S3_PORT: 4572
       S3_HOST: localstack
       AWS_ACCESS_KEY_ID: unit-test-user
@@ -39,12 +45,13 @@ services:
       AWS_DEFAULT_REGION: cn-north-1
       AWS_DEFAULT_OUTPUT: text
 
+      # 在docker-compose中, 想要在web service中访问
+      # mysql, localstack or presto, 需要给一个hostname, 
+      # hostname跟service name一致.
       PRESTO_HOST: presto
-
       MYSQL_HOST: mysql
       MYSQL_DATABASE: test
       MYSQL_ROOT_PASSWORD: "123456"
-
 
     depends_on:
       - mysql
@@ -60,7 +67,6 @@ services:
     image: python-web-base:v0.1
     command: bash /base/sbin/docker_compose_celery_entrypoint.sh
     environment:
-      SQL_BUFFET_UNIT_TEST: 1
       C_FORCE_ROOT: "true"
 
       PRESTO_HOST: presto
@@ -84,7 +90,3 @@ services:
       - .:/base
 #   query result shared volume: /tmp/
       - /tmp:/tmp
-
-
-
-
