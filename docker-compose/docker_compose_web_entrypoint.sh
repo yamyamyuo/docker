@@ -6,13 +6,12 @@ cd $current_dir/../
 
 echo "init environment variables for dev & unit test..."
 export DOCKER_COMPOSE=1
-export SQL_BUFFET_UNIT_TEST=1
 export S3_PORT=4572
 export S3_HOST=localstack
 pip install -r requirements.txt
 
 echo "init localstack aws s3 bucket..."
-aws s3api --endpoint http://$S3_HOST:4572  create-bucket --bucket sqlbuffet
+aws s3api --endpoint http://$S3_HOST:4572  create-bucket --bucket s3_bucket
 aws s3 --endpoint http://$S3_HOST:4572 ls
 
 MYSQL_ROOT_PASSWORD='123456'
